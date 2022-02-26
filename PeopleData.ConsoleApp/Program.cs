@@ -36,14 +36,8 @@ namespace PeopleDataApp.ConsoleApp
                 
            
             var app = host.Services.GetService<App>();
+            await app.Start();
 
-            //Task.Run(async() =>
-            //   {
-
-                 await app.Start();
-
-            //   }
-            //);
 
 
 

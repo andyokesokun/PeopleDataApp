@@ -8,10 +8,10 @@ namespace PeopleData.Data.Models.Response.Enums
     public enum  PersonFilter
     {
         [Description(nameof(Person.FirstName))]
-        FIRSTNAME=0,
+        FIRSTNAME=1,
         [Description(nameof(Person.LastName))]
-        LASTNAME=1,
+        LASTNAME=2,
         [Description(nameof(Person.Gender))]
-        GENDER =  2
+        GENDER = 3
     }
 }
