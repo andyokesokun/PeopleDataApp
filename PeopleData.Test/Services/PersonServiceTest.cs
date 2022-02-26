@@ -118,6 +118,56 @@ namespace PeopleData.Test.Services
 
         }
 
+        [Fact]
+        public async Task ShouldUpdatePerson()
+        {
+
+            var mockData = PeopleSample.GetPeopleData(1);
+            var person = mockData.Value.FirstOrDefault();
+            person.FirstName = "John";
+
+            var odaSettings = _mockDataConfig.Object.Value;
+
+            var url = odaSettings.BaseUrl
+                         .AppendPathSegment(odaSettings.Key)
+                         .AppendPathSegment($"{ odaSettings.PeoplePath}('{person.UserName}')");
+
+
+            _httpTest.RespondWith(status: 200);
+            var response = await _personService.UpdatePerson(person);
+            var updated = response.Result;
+
+            _httpTest.ShouldHaveCalled(url);
+            Assert.True(updated);
+            Assert.Equal(ResponseCode.Ok, response.Response);
+
+        }
+
+
+        [Fact]
+        public async Task ShouldDeletePerson()
+        {
+
+            var mockData = PeopleSample.GetPeopleData(1);
+            var person = mockData.Value.FirstOrDefault();
+            var odaSettings = _mockDataConfig.Object.Value;
+
+            var url = odaSettings.BaseUrl
+                         .AppendPathSegment(odaSettings.Key)
+                         .AppendPathSegment($"{ odaSettings.PeoplePath}('{person.UserName}')");
+
+
+            _httpTest.RespondWith(status: 200);
+            var response = await _personService.DeletePerson(person.UserName);
+            var deleted = response.Result;
+
+            _httpTest.ShouldHaveCalled(url);
+            Assert.True(deleted);
+            Assert.Equal(ResponseCode.Ok, response.Response);
+
+        }
+
+       
         public void Dispose()
         {
             _httpTest.Dispose();
