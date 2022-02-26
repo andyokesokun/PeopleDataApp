@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using PeopleData.Business.Services;
 using PeopleData.Business.Services.Implementation;
+using PeopleData.Data.Models.Response.Enums;
 using PeopleData.Data.Settings;
 using PeopleData.Test.Mock;
 using System;
@@ -53,11 +54,18 @@ namespace PeopleData.Test.Services
         {
 
             var mockData = PeopleSample.GetPeopleData(10);
-            
+            var odaSettings = _mockDataConfig.Object.Value;
+           
+            var url = odaSettings.BaseUrl
+                         .AppendPathSegment(odaSettings.Key)
+                         .AppendPathSegment(odaSettings.PeoplePath);
+
 
             _httpTest.RespondWithJson(mockData, 200);
             var list = await _personService.GetPeople();
 
+            _httpTest.ShouldHaveCalled(url);
+            Assert.Equal(ResponseCode.Ok, list.Response);
             Assert.Equal(mockData.Value.Count, list.Result.Value.Count );
 
         }
@@ -83,6 +91,30 @@ namespace PeopleData.Test.Services
             _httpTest.ShouldHaveCalled(url);
             Assert.NotNull(person);
             Assert.Equal(person.FirstName, actualPerson.FirstName);
+
+        }
+
+
+        [Fact]
+        public async Task FindPerson()
+        {
+
+            var mockData = PeopleSample.GetPeopleData(1);
+            var person = mockData.Value.FirstOrDefault();
+            var odaSettings = _mockDataConfig.Object.Value;
+
+            var url = odaSettings.BaseUrl
+                         .AppendPathSegment(odaSettings.Key)
+                         .AppendPathSegment($"{ odaSettings.PeoplePath}('{person.UserName}')");
+       
+
+            _httpTest.RespondWithJson(person, 200);
+            var response = await _personService.FindPerson(person.UserName);
+            var actualPerson = response.Result;
+
+            _httpTest.ShouldHaveCalled(url);
+            Assert.NotNull(person);
+            Assert.Equal(person.UserName, actualPerson.UserName);
 
         }
 
