@@ -2,9 +2,11 @@
 using Flurl.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-
+using PeopleData.Business.Common.Extensions;
 using PeopleData.Data.Models.Response;
+using PeopleData.Data.Models.Response.Enums;
 using PeopleData.Data.Settings;
+using System;
 using System.Threading.Tasks;
 
 namespace PeopleData.Business.Services.Implementation
@@ -20,14 +22,58 @@ namespace PeopleData.Business.Services.Implementation
             _odaSettings = odaSettings.Value;
 
         }
-        public async Task<People> GetPeople()
+
+        public async Task<APIResponse<People>> FilterPeople(PersonFilter personFilter, string filterValue)
         {
-            var url = _odaSettings.BaseUrl
+            try
+            {
+                var url = _odaSettings.BaseUrl
+                         .AppendPathSegment(_odaSettings.Key)
+                         .AppendPathSegment(_odaSettings.PeoplePath)
+                         .SetQueryParam("$Filter", $"{personFilter.ToDescription()} eg '{filterValue}'");
+
+               var result= await url.GetJsonAsync<People>();
+
+                if (result !=null) {
+
+                    return APIResponse<People>.Success(result, ResponseCode.Ok.ToDescription());
+                }
+
+                return APIResponse<People>.Failed( errorMessage: ResponseCode.Failed.ToDescription());
+
+            } catch (Exception e) {
+                return APIResponse<People>.Failed( e.Message, ResponseCode.Exeception);
+            }
+
+
+         
+        }
+
+        public async Task<APIResponse<People>> GetPeople()
+        {
+
+            try
+            {
+                var url = _odaSettings.BaseUrl
                        .AppendPathSegment(_odaSettings.Key)
                        .AppendPathSegment(_odaSettings.PeoplePath);
 
-           return await url.GetJsonAsync<People>();
-                        
+                var result = await url.GetJsonAsync<People>();
+
+                if (result != null)
+                {
+
+                    return APIResponse<People>.Success(result, ResponseCode.Ok.ToDescription());
+                }
+
+                return APIResponse<People>.Failed(errorMessage: ResponseCode.Failed.ToDescription());
+
+            }
+            catch (Exception e)
+            {
+                return APIResponse<People>.Failed(e.Message, ResponseCode.Exeception);
+            }
+
         }
 
 

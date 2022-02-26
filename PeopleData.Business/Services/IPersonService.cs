@@ -1,4 +1,5 @@
 ﻿using PeopleData.Data.Models.Response;
+using PeopleData.Data.Models.Response.Enums;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,6 +9,7 @@ namespace PeopleData.Business.Services
 {
     public interface IPersonService
     {
-        Task<People> GetPeople();
+        Task<APIResponse<People>> GetPeople();
+        Task<APIResponse<People>> FilterPeople(PersonFilter personFilter, string filterValue );
     }
 }
