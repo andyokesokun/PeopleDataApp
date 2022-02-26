@@ -25,56 +25,65 @@ namespace PeopleData.Business.Services.Implementation
 
         public async Task<APIResponse<People>> FilterPeople(PersonFilter personFilter, string filterValue)
         {
-            try
-            {
+           
                 var url = _odaSettings.BaseUrl
                          .AppendPathSegment(_odaSettings.Key)
                          .AppendPathSegment(_odaSettings.PeoplePath)
                          .SetQueryParam("$Filter", $"{personFilter.ToDescription()} eg '{filterValue}'");
 
-               var result= await url.GetJsonAsync<People>();
 
-                if (result !=null) {
-
-                    return APIResponse<People>.Success(result, ResponseCode.Ok.ToDescription());
-                }
-
-                return APIResponse<People>.Failed( errorMessage: ResponseCode.Failed.ToDescription());
-
-            } catch (Exception e) {
-                return APIResponse<People>.Failed( e.Message, ResponseCode.Exeception);
-            }
+            return await HandleGetResponse<People>(url);
 
 
-         
+        }
+
+        public async Task<APIResponse<Person>> FindPerson(string userName)
+        {
+    
+                var url = _odaSettings.BaseUrl
+                       .AppendPathSegment(_odaSettings.Key)
+                       .AppendPathSegment( $"{_odaSettings.PeoplePath}('{userName}')" );
+
+            return await HandleGetResponse<Person>(url);
+
+
         }
 
         public async Task<APIResponse<People>> GetPeople()
         {
 
-            try
-            {
+   
                 var url = _odaSettings.BaseUrl
                        .AppendPathSegment(_odaSettings.Key)
                        .AppendPathSegment(_odaSettings.PeoplePath);
 
-                var result = await url.GetJsonAsync<People>();
+            return await HandleGetResponse<People>(url);
+
+        }
+
+        private  async Task<APIResponse<T>>  HandleGetResponse<T>(Url url) {
+
+            try
+            {
+               
+                var result = await url.GetJsonAsync<T>();
 
                 if (result != null)
                 {
 
-                    return APIResponse<People>.Success(result, ResponseCode.Ok.ToDescription());
+                    return APIResponse<T>.Success(result, ResponseCode.Ok.ToDescription());
                 }
 
-                return APIResponse<People>.Failed(errorMessage: ResponseCode.Failed.ToDescription());
+                return APIResponse<T>.Failed(errorMessage: ResponseCode.Failed.ToDescription());
 
             }
             catch (Exception e)
             {
-                return APIResponse<People>.Failed(e.Message, ResponseCode.Exeception);
+                return APIResponse<T>.Failed(e.Message, ResponseCode.Exeception);
             }
 
         }
+
 
 
     }
