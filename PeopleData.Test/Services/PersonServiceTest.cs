@@ -1,4 +1,5 @@
-﻿using Flurl.Http.Testing;
+﻿using Flurl;
+using Flurl.Http.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -10,6 +11,7 @@ using PeopleData.Test.Mock;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
@@ -51,11 +53,36 @@ namespace PeopleData.Test.Services
         {
 
             var mockData = PeopleSample.GetPeopleData(10);
+            
 
             _httpTest.RespondWithJson(mockData, 200);
             var list = await _personService.GetPeople();
 
-            Assert.Equal(mockData.Value.Count, list.Value.Count);
+            Assert.Equal(mockData.Value.Count, list.Result.Value.Count );
+
+        }
+
+        [Fact]
+        public async Task FilterPerson()
+        {
+
+            var mockData = PeopleSample.GetPeopleData(1);
+            var person = mockData.Value.FirstOrDefault();
+            var odaSettings = _mockDataConfig.Object.Value;
+
+            var url = odaSettings.BaseUrl
+                         .AppendPathSegment(odaSettings.Key)
+                         .AppendPathSegment(odaSettings.PeoplePath)
+                         .SetQueryParam("$Filter", $"FirstName eg '{person.FirstName}'");
+
+
+            _httpTest.RespondWithJson(mockData, 200);
+            var response = await _personService.FilterPeople(Data.Models.Response.Enums.PersonFilter.FIRSTNAME, person.FirstName);
+            var actualPerson = response.Result.Value.FirstOrDefault();
+
+            _httpTest.ShouldHaveCalled(url);
+            Assert.NotNull(person);
+            Assert.Equal(person.FirstName, actualPerson.FirstName);
 
         }
 

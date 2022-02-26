@@ -19,7 +19,7 @@ namespace PeopleData.ConsoleApp
         private async Task Menu() {
 
             var people = await _personService.GetPeople();
-            Console.WriteLine(people.Value.Count);
+            Console.WriteLine(people.Result.Value.Count);
         }
 
         public async Task Start() {
