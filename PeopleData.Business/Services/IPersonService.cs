@@ -12,5 +12,8 @@ namespace PeopleData.Business.Services
         Task<APIResponse<People>> GetPeople();
         Task<APIResponse<People>> FilterPeople(PersonFilter personFilter, string filterValue );
         Task<APIResponse<Person>> FindPerson(string userName);
+
+        Task<APIResponse<bool>>  UpdatePerson(Person person );
+        Task<APIResponse<bool>> DeletePerson(string userName);
     }
 }
